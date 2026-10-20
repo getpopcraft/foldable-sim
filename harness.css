@@ -36,3 +36,11 @@ body { display: flex; flex-direction: column; background: var(--bg); color: var(
 .segmented button[aria-selected="true"] { background: var(--accent); color: var(--accent-fg); }
 .controls .icon { width: 44px; height: 44px; border-radius: 999px; padding: 0; font-size: 18px; }
 .size { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+/* Narrow screens (a phone, a split-screen window): the URL field gets its own row, the controls wrap and centre. */
+@media (max-width: 640px) {
+  .bar { flex-wrap: wrap; }
+  .url { order: 3; flex-basis: 100%; }
+  .controls { flex-wrap: wrap; row-gap: 8px; }
+  .segmented button { padding: 0 12px; }
+}
