@@ -28,6 +28,9 @@ body { display: flex; flex-direction: column; background: var(--bg); color: var(
 /* The hinge, drawn over the crease: taps on it go nowhere, as on the device. */
 .crease { position: absolute; display: none; background: linear-gradient(to bottom, #050505, #2a2a2e 45%, #2a2a2e 55%, #050505); }
 .crease[data-fold="vertical"] { background: linear-gradient(to right, #050505, #2a2a2e 45%, #2a2a2e 55%, #050505); }
+.hint { position: absolute; inset-inline: 16px; bottom: 12px; margin: 0 auto; max-width: 560px; padding: 10px 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--border); color: var(--muted); font-size: 13px; line-height: 1.45; }
+.hint code { color: var(--fg); }
+.hint a { color: var(--accent); }
 .empty { color: var(--muted); max-width: 420px; text-align: center; line-height: 1.5; padding: 24px; }
 
 .controls { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 16px max(env(safe-area-inset-bottom), 12px); }

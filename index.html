@@ -23,6 +23,12 @@
       <iframe id="app" title="App under test" allow="clipboard-read; clipboard-write; fullscreen"></iframe>
       <div id="crease" class="crease" aria-hidden="true"></div>
     </div>
+    <p id="hint" class="hint" role="status" hidden>
+      No word from this app. If the frame is blank, the site refuses to be framed
+      (<code>X-Frame-Options</code> or <code>frame-ancestors</code>); production sites usually do, so open a
+      development URL that allows <code>https://getpopcraft.github.io</code>. If the app shows but ignores the posture,
+      add the <a href="https://github.com/getpopcraft/foldable-sim#cross-origin-apps-include-the-client">client</a>.
+    </p>
     <p id="empty" class="empty">Enter your app's URL above. It must allow being framed (no <code>X-Frame-Options: DENY</code>).</p>
   </main>
 

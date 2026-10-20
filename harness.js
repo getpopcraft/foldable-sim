@@ -82,12 +82,31 @@ function setUrl(url) {
   $('url').value = url
   $('empty').hidden = !!url
   device.hidden = !url
+  heard = false
+  hint.hidden = true
   if (url && frame.getAttribute('src') !== url) frame.src = url
 }
 
 // The app asks for the posture when its client starts, and every page it loads gets it again.
-window.addEventListener('message', e => { if (e.source === frame.contentWindow && e.data?.type === 'foldable-sim:ready') publish() })
-frame.addEventListener('load', publish)
+// A cross-origin app that never says hello is either refusing to be framed (the browser shows an empty page and
+// says nothing to this page) or has no client: after a few seconds, say so instead of leaving a blank device.
+let heard = false
+let hintTimer = 0
+const hint = $('hint')
+window.addEventListener('message', e => {
+  if (e.source !== frame.contentWindow || e.data?.type !== 'foldable-sim:ready') return
+  heard = true
+  hint.hidden = true
+  publish()
+})
+frame.addEventListener('load', () => {
+  publish()
+  clearTimeout(hintTimer)
+  let sameOrigin = false
+  try { sameOrigin = !!frame.contentDocument } catch { /* cross-origin */ }
+  hint.hidden = true
+  if (!sameOrigin && !heard) hintTimer = setTimeout(() => { if (!heard) hint.hidden = false }, 3000)
+})
 new ResizeObserver(layout).observe(stage)
 
 $('url-form').addEventListener('submit', e => { e.preventDefault(); setUrl($('url').value.trim()) })
