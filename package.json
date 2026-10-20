@@ -1,0 +1,15 @@
+{
+  "name": "@popcraft/foldable-sim",
+  "version": "0.1.0",
+  "description": "Test web apps' foldable layouts (closed, half open, open; portrait and landscape) in any browser.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./client/foldable-posture.js",
+    "./devices": "./devices.js"
+  },
+  "files": ["client", "devices.js", "index.html", "harness.js", "harness.css", "demo"],
+  "repository": { "type": "git", "url": "git+https://github.com/getpopcraft/foldable-sim.git" },
+  "keywords": ["foldable", "iphone-duo", "viewport-segments", "device-posture", "responsive", "simulator"],
+  "scripts": { "start": "npx --yes serve -l 4400 ." }
+}

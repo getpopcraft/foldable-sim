@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Foldable Sim</title>
+  <meta name="description" content="Test your web app's foldable layouts — closed, half open and open, in portrait and landscape — in any browser, on a device that can run your whole app." />
+  <link rel="stylesheet" href="./harness.css" />
+</head>
+<body>
+  <header class="bar">
+    <strong class="brand">Foldable Sim</strong>
+    <form id="url-form" class="url" autocomplete="off">
+      <label for="url" class="sr-only">App URL</label>
+      <input id="url" name="url" type="url" placeholder="https://localhost:3000/" spellcheck="false" />
+      <button type="submit">Open</button>
+    </form>
+    <a class="gh" href="https://github.com/getpopcraft/foldable-sim" aria-label="Source on GitHub">GitHub</a>
+  </header>
+
+  <main id="stage" class="stage">
+    <div id="device" class="device">
+      <iframe id="app" title="App under test" allow="clipboard-read; clipboard-write; fullscreen"></iframe>
+      <div id="crease" class="crease" aria-hidden="true"></div>
+    </div>
+    <p id="empty" class="empty">Enter your app's URL above. It must allow being framed (no <code>X-Frame-Options: DENY</code>).</p>
+  </main>
+
+  <nav class="controls" aria-label="Posture">
+    <div role="tablist" class="segmented" id="postures">
+      <button type="button" role="tab" data-posture="closed">Closed</button>
+      <button type="button" role="tab" data-posture="half">Half open</button>
+      <button type="button" role="tab" data-posture="open">Open</button>
+    </div>
+    <button type="button" id="rotate" class="icon" aria-label="Rotate" title="Rotate">⟳</button>
+    <span id="size" class="size"></span>
+  </nav>
+
+  <script type="module" src="./harness.js"></script>
+</body>
+</html>
