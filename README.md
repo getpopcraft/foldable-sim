@@ -67,14 +67,14 @@ npx serve .        # → http://localhost:3000/?url=https://localhost:5173/
 
 ## Devices
 
-| | Device | Screen (CSS px) | Touch |
-|---|---|---|---|
-| 📱↔📱 | **iPhone Duo** | closed 466 × 678 · open 951 × 669, crease 40 px | ✓ |
-| 📱 | iPhone 17 | 402 × 874 | ✓ |
-| 📱 | iPhone 17 Pro Max | 440 × 956 | ✓ |
-| ▭ | iPad mini | 744 × 1133 | ✓ |
-| ▭ | iPad Pro 13″ | 1032 × 1376 | ✓ |
-| 💻 | MacBook Air 13″ | 1470 × 956, landscape only | — |
+| Device | Screen (CSS px) | Touch |
+|---|---|---|
+| **iPhone Duo** | closed 466 × 678 · open 951 × 669, crease 40 px | ✓ |
+| iPhone 17 | 402 × 874 | ✓ |
+| iPhone 17 Pro Max | 440 × 956 | ✓ |
+| iPad mini | 744 × 1133 | ✓ |
+| iPad Pro 13″ | 1032 × 1376 | ✓ |
+| MacBook Air 13″ | 1470 × 956, landscape only | — |
 
 Sizes are measured in CSS pixels (the Duo on Xcode 27.1's simulator). Add a device in [`devices.js`](devices.js): its
 screen and crease for each posture. Pull requests welcome.
