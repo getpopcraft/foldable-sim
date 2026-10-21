@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Foldable Sim</title>
-  <meta name="description" content="Test your web app's foldable layouts — closed, half open and open, in portrait and landscape — in any browser, on a device that can run your whole app." />
+  <meta name="description" content="Test your web app's responsive and foldable layouts — iPhone, iPad, MacBook and iPhone Duo (closed, half open, open), in portrait and landscape — in any browser." />
   <link rel="stylesheet" href="./harness.css" />
 </head>
 <body>
@@ -33,6 +33,8 @@
   </main>
 
   <nav class="controls" aria-label="Posture">
+    <label for="device-picker" class="sr-only">Device</label>
+    <select id="device-picker" class="picker"></select>
     <div role="tablist" class="segmented" id="postures">
       <button type="button" role="tab" data-posture="closed">Closed</button>
       <button type="button" role="tab" data-posture="half">Half open</button>

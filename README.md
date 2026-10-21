@@ -1,6 +1,6 @@
 # Foldable Sim
 
-Foldable Sim tests your web app's foldable layouts in any browser: closed, half open and open, in portrait and landscape. It runs on a device that can actually run your whole app, such as an iPad, a laptop or a desktop.
+Foldable Sim tests your web app's responsive and foldable layouts in any browser: iPhone, iPad and MacBook screens, and the iPhone Duo closed, half open and open, in portrait and landscape. It runs on a device that can actually run your whole app, such as an iPad, a laptop or a desktop.
 
 Foldable phones are new, and the official simulators are limited. For example, the iOS simulator has no WebGPU adapter, so canvas-heavy apps render black there. Foldable Sim instead frames your app at the device's real screen size and tells it the posture the same way the device would. Your app's own fold handling runs unchanged, on hardware that can draw it.
 
@@ -20,8 +20,9 @@ npx serve .            # then open http://localhost:3000/?url=https://localhost:
 
 | Query parameter | Meaning |
 |---|---|
-| `url` | The app to frame. Without one, the built-in demo opens. |
-| `posture` | `closed`, `half` or `open` |
+| `url` | The app to frame. Without one, the Tailwind example opens. |
+| `device` | `iphone-duo`, `iphone-17`, `iphone-17-pro-max`, `ipad-mini`, `ipad-pro-13` or `macbook-air-13` |
+| `posture` | `closed`, `half` or `open` (foldables only) |
 | `orientation` | `portrait` or `landscape` |
 | `prefix` | For same-origin apps: the attribute and variable prefix the app reads (`pc` → `data-pc-hinge`) |
 
@@ -38,10 +39,10 @@ When it's framed, the page gets the same facts a native shell or browser would r
 
 | What | Meaning |
 |---|---|
-| `data-hinge` | `closed`, `partial` (half open), `open` or `unknown` |
+| `data-hinge` | `closed`, `partial` (half open), `open`, `none` (no hinge: a phone, tablet or laptop) or `unknown` |
 | `data-fold` | `none`, `vertical` (the device is held like a book) or `horizontal` (held like a laptop) |
 | `--fold-x/y/w/h` | The crease, in CSS pixels. `0px` when there is none. |
-| `data-touch` | Present while framed: a foldable is a touch screen even when you test on a laptop. |
+| `data-touch` | Present while the simulated device has a touch screen (every one but the MacBook), even when you test on a laptop. |
 | `foldable-posture` event | Fired on `window` after every change, with `{ hinge, fold, crease }` |
 | `window.viewport.segments` | The standard [Viewport Segments API](https://developer.mozilla.org/docs/Web/API/Viewport/segments), as the simulated device would report it: one segment when flat or closed, two either side of the crease. It shadows the browser's own while framed. |
 
@@ -71,13 +72,30 @@ html[data-hinge="partial"][data-fold="horizontal"] .app {
 }
 ```
 
-`demo/index.html` is a complete working example.
+## Examples
+
+- **`examples/tailwind/`**: Netrunner Notes, a notes app in Tailwind v4 with a Cyberpunk look and five layouts: a
+  phone's list-then-note, list beside note from `sm`, a third outline column from `lg`, and both half-open postures.
+  It defines `half:`, `fold-v:`, `fold-h:` and `touch:` variants:
+
+  ```css
+  @custom-variant fold-v (&:where([data-hinge="partial"][data-fold="vertical"], [data-hinge="partial"][data-fold="vertical"] *));
+  ```
+  ```html
+  <div class="grid sm:grid-cols-[15rem_1fr] fold-v:grid-cols-[var(--fold-x)_1fr] fold-v:gap-x-[var(--fold-w)]">
+  ```
+- **`demo/`**: the smallest possible example, in plain CSS.
 
 ## Devices
 
-| Device | Closed | Half open / open |
+| Device | Screen (closed, for the Duo) | Half open / open |
 |---|---|---|
 | iPhone Duo | 466 × 678 | 951 × 669 (portrait, crease at x 456–496) · 669 × 951 (landscape, crease at y 456–496) |
+| iPhone 17 | 402 × 874 | — |
+| iPhone 17 Pro Max | 440 × 956 | — |
+| iPad mini | 744 × 1133 | — |
+| iPad Pro 13″ | 1032 × 1376 | — |
+| MacBook Air 13″ | 1470 × 956 (landscape only, no touch) | — |
 
 The sizes were measured in CSS pixels on the iPhone Duo simulator (Xcode 27.1). You can add a device in `devices.js` with its screen and crease for each posture; pull requests are welcome.
 

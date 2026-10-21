@@ -2,7 +2,7 @@
 // it the way the device would. Cross-origin apps get it by postMessage (include client/foldable-posture.js); a
 // same-origin app gets it written straight onto its document too, so it needs no client at all.
 
-import { screenFor } from './devices.js'
+import { DEVICES, screenFor, posturesOf, orientationsOf } from './devices.js'
 import { MESSAGE_TYPE } from './client/foldable-posture.js'
 
 const $ = id => document.getElementById(id)
@@ -21,14 +21,14 @@ const state = {
   // Same-origin apps: also write attributes with this prefix directly (PopCraft uses ?prefix=pc).
   prefix: params.get('prefix') ?? store.get('prefix', ''),
   // The demo when nothing else has been opened, so the hosted page shows something straight away.
-  url: params.get('url') ?? store.get('url', new URL('./demo/', location.href).href),
+  url: params.get('url') ?? store.get('url', new URL('./examples/tailwind/', location.href).href),
 }
 
 const BEZEL = 14
 
 function posture() {
   const s = screenFor(state.device, state.posture, state.orientation)
-  return { type: MESSAGE_TYPE, device: state.device, hinge: s.hinge, fold: s.fold, crease: s.crease, touch: true, screen: s }
+  return { type: MESSAGE_TYPE, device: state.device, hinge: s.hinge, fold: s.fold, crease: s.crease, touch: s.touch, screen: s }
 }
 
 /** Tell the app: by message always, and onto its document when it is same-origin (no client script needed). */
@@ -46,7 +46,7 @@ function publish() {
     const c = p.crease ?? { x: 0, y: 0, w: 0, h: 0 }
     d.setAttribute(a('hinge'), p.hinge)
     d.setAttribute(a('fold'), p.fold)
-    d.setAttribute(a('touch'), '')
+    d.toggleAttribute(a('touch'), p.touch)
     // The app's own Viewport Segments reader should not overwrite what the simulator says.
     d.setAttribute(a('native-fold'), '')
     for (const [k, val] of [['fold-x', c.x], ['fold-y', c.y], ['fold-w', c.w], ['fold-h', c.h]]) d.style.setProperty(v(k), `${val}px`)
@@ -54,8 +54,24 @@ function publish() {
   } catch { /* cross-origin: the message carries it */ }
 }
 
+/** Keep the posture and orientation to ones the chosen device has. */
+function fit() {
+  if (!DEVICES[state.device]) state.device = 'iphone-duo'
+  const ps = posturesOf(state.device)
+  if (!ps.includes(state.posture)) state.posture = ps.includes('half') ? 'half' : ps[0]
+  const os = orientationsOf(state.device, state.posture)
+  if (!os.includes(state.orientation)) state.orientation = os[0]
+}
+
 function layout() {
+  fit()
   const s = posture().screen
+  const ps = posturesOf(state.device)
+  $('postures').hidden = ps.length < 2
+  for (const b of document.querySelectorAll('[data-posture]')) b.hidden = !ps.includes(b.dataset.posture)
+  $('rotate').hidden = orientationsOf(state.device, state.posture).length < 2
+  $('device-picker').value = state.device
+  device.toggleAttribute('data-laptop', s.laptop)
   device.style.width = `${s.w + 2 * BEZEL}px`
   device.style.height = `${s.h + 2 * BEZEL}px`
   device.style.padding = `${BEZEL}px`
@@ -108,6 +124,10 @@ frame.addEventListener('load', () => {
   if (!sameOrigin && !heard) hintTimer = setTimeout(() => { if (!heard) hint.hidden = false }, 3000)
 })
 new ResizeObserver(layout).observe(stage)
+
+const picker = $('device-picker')
+for (const [id, d] of Object.entries(DEVICES)) picker.append(new Option(d.name, id))
+picker.addEventListener('change', () => { state.device = picker.value; store.set('device', state.device); layout() })
 
 $('url-form').addEventListener('submit', e => { e.preventDefault(); setUrl($('url').value.trim()) })
 for (const b of document.querySelectorAll('[data-posture]')) {

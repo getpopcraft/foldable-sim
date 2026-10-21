@@ -4,7 +4,7 @@
 // applies that posture to the page the same way a native shell or the browser would, so the app's own foldable
 // layout runs unchanged:
 //
-//   <html data-hinge="closed|partial|open|unknown" data-fold="none|vertical|horizontal" data-touch>
+//   <html data-hinge="closed|partial|open|none|unknown" data-fold="none|vertical|horizontal" data-touch>
 //   --fold-x / --fold-y / --fold-w / --fold-h      the crease (the division region) in CSS px, 0 when there is none
 //   window 'foldable-posture' event                 { hinge, fold, crease } after every change
 //   window.viewport.segments                        the Viewport Segments API, as the simulated device would report it
@@ -42,7 +42,7 @@ export function installFoldablePosture(options = {}) {
     const c = p.crease ?? { x: 0, y: 0, w: 0, h: 0 }
     d.setAttribute(attr('hinge'), p.hinge)
     d.setAttribute(attr('fold'), p.fold)
-    // A foldable is a touch screen, even when the simulator runs on a laptop: apps can treat it as one.
+    // The simulated device's touch screen, even when the simulator runs on a laptop (a simulated laptop has none).
     d.toggleAttribute(attr('touch'), p.touch !== false)
     d.style.setProperty(cssVar('fold-x'), `${c.x}px`)
     d.style.setProperty(cssVar('fold-y'), `${c.y}px`)
@@ -86,6 +86,6 @@ function shimSegments(p) {
 }
 
 /**
- * @typedef {{ type: string, device: string, hinge: 'closed'|'partial'|'open'|'unknown', fold: 'none'|'vertical'|'horizontal',
+ * @typedef {{ type: string, device: string, hinge: 'closed'|'partial'|'open'|'none'|'unknown', fold: 'none'|'vertical'|'horizontal',
  *   crease: { x: number, y: number, w: number, h: number } | null, touch?: boolean }} Posture
  */

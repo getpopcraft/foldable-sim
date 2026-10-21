@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Netrunner Notes</title>
+  <!-- Tailwind v4's in-browser build keeps the example one file; a real app uses the CLI or a bundler plugin. -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style type="text/tailwindcss">
+    /* The foldable variants: what Foldable Sim (or a native shell) writes onto <html>. */
+    @custom-variant half (&:where([data-hinge="partial"], [data-hinge="partial"] *));
+    @custom-variant fold-v (&:where([data-hinge="partial"][data-fold="vertical"], [data-hinge="partial"][data-fold="vertical"] *));
+    @custom-variant fold-h (&:where([data-hinge="partial"][data-fold="horizontal"], [data-hinge="partial"][data-fold="horizontal"] *));
+    @custom-variant touch (&:where([data-touch], [data-touch] *));
+    /* Night City: signal yellow on near-black, cyan for data, red for danger. */
+    @theme {
+      --font-sans: Rajdhani, ui-sans-serif, system-ui, sans-serif;
+      --font-mono: "Share Tech Mono", ui-monospace, monospace;
+      --color-void: #07070b;
+      --color-panel: #0e0f16;
+      --color-edge: #23252f;
+      --color-volt: #fcee0a;
+      --color-ice: #00f0ff;
+      --color-blood: #ff003c;
+    }
+    :root { --fold-x: 0px; --fold-y: 0px; --fold-w: 0px; --fold-h: 0px; color-scheme: dark; }
+    @utility cut { clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); }
+    @utility cut-sm { clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%); }
+    @utility glow-volt { text-shadow: 0 0 12px rgb(252 238 10 / 0.55); }
+    @utility glow-ice { text-shadow: 0 0 10px rgb(0 240 255 / 0.6); }
+    @utility grid-bg {
+      background-color: var(--color-void);
+      background-image: linear-gradient(rgb(0 240 255 / 0.05) 1px, transparent 1px), linear-gradient(90deg, rgb(0 240 255 / 0.05) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+    /* Scanlines over everything; pointer-events off so it never takes a tap. */
+    body::after { content: ""; position: fixed; inset: 0; pointer-events: none; background: repeating-linear-gradient(transparent 0 2px, rgb(0 0 0 / 0.18) 2px 3px); }
+    ::selection { background: var(--color-volt); color: var(--color-void); }
+    textarea { caret-color: var(--color-volt); }
+    @keyframes flicker { 0%, 92%, 100% { opacity: 1 } 93% { opacity: .4 } 95% { opacity: .9 } 96% { opacity: .3 } }
+    @utility flicker { animation: flicker 6s infinite; }
+    @media (prefers-reduced-motion: reduce) { .flicker { animation: none } }
+  </style>
+</head>
+<body class="grid-bg h-full font-sans text-zinc-100 antialiased">
+  <!--
+    One app, five layouts, chosen by breakpoints and the fold:
+      phone          list, then the note (data-view on the root switches them)
+      sm (tablet)    list beside the note
+      lg (laptop)    list, note and outline
+      half, book     list left of the crease, note right of it
+      half, laptop   the note above the crease, the list below
+  -->
+  <div id="app" data-view="list" class="group/app grid h-full gap-2 p-2 md:gap-3 md:p-3 half:p-0
+      grid-cols-1 sm:grid-cols-[15rem_1fr] md:grid-cols-[17rem_1fr] lg:grid-cols-[17rem_1fr_15rem]
+      fold-v:grid-cols-[var(--fold-x)_1fr] fold-v:gap-x-[var(--fold-w)] fold-v:gap-y-0
+      fold-h:grid-cols-1 fold-h:grid-rows-[var(--fold-y)_1fr] fold-h:gap-y-[var(--fold-h)] fold-h:gap-x-0">
+
+    <aside class="cut relative flex min-h-0 flex-col border-s-4 border-volt bg-panel/95 shadow-[0_0_30px_rgb(252_238_10/0.08)]
+        group-data-[view=note]/app:hidden sm:group-data-[view=note]/app:flex half:group-data-[view=note]/app:flex
+        fold-h:order-2">
+      <header class="flex items-center justify-between gap-2 px-4 pt-[max(env(safe-area-inset-top),1rem)] pb-3">
+        <div>
+          <p class="font-mono text-[10px] tracking-[0.3em] text-ice">// NC-NET :: SECURE</p>
+          <h1 class="flicker glow-volt text-2xl leading-none font-bold tracking-wider text-volt uppercase">Netrunner<span class="text-blood">_</span>Notes</h1>
+        </div>
+        <button id="new" type="button" class="cut-sm bg-volt px-3 py-1.5 font-bold tracking-widest text-void uppercase transition hover:bg-ice hover:shadow-[0_0_18px_var(--color-ice)] touch:px-4 touch:py-2.5">+ New</button>
+      </header>
+      <label class="px-4 pb-3">
+        <span class="sr-only">Search notes</span>
+        <input id="search" type="search" placeholder="SCAN ARCHIVE…" class="w-full border border-edge bg-void px-3 py-1.5 font-mono text-sm text-ice placeholder:text-zinc-600 outline-none focus:border-ice focus:shadow-[0_0_12px_rgb(0_240_255/0.35)] touch:py-2.5 touch:text-base" />
+      </label>
+      <ul id="list" class="min-h-0 flex-1 overflow-y-auto px-2 pb-4"></ul>
+    </aside>
+
+    <main class="cut relative flex min-h-0 flex-col border-t-2 border-ice bg-panel/95 shadow-[0_0_40px_rgb(0_240_255/0.08)]
+        group-data-[view=list]/app:hidden sm:group-data-[view=list]/app:flex half:group-data-[view=list]/app:flex
+        fold-h:order-1">
+      <header class="flex items-center gap-2 border-b border-edge px-3 pt-[max(env(safe-area-inset-top),0.75rem)] pb-2">
+        <button id="back" type="button" class="px-2 py-1 font-bold tracking-widest text-ice uppercase sm:hidden half:hidden touch:py-2" aria-label="All notes">◂ Back</button>
+        <input id="title" placeholder="UNTITLED SHARD" class="glow-ice min-w-0 flex-1 bg-transparent text-xl font-bold tracking-wide text-ice uppercase placeholder:text-zinc-700 outline-none" aria-label="Title" />
+        <button id="delete" type="button" class="cut-sm border border-blood/60 px-2 py-1 font-mono text-xs tracking-widest text-blood uppercase hover:bg-blood hover:text-void touch:py-2">Flatline</button>
+      </header>
+      <textarea id="body" class="min-h-0 flex-1 resize-none bg-transparent p-4 font-mono text-[15px] leading-relaxed text-zinc-200 outline-none touch:text-base" aria-label="Note"></textarea>
+    </main>
+
+    <aside class="cut hidden min-h-0 flex-col gap-6 overflow-y-auto border-e-4 border-blood bg-panel/95 p-4 lg:flex half:hidden">
+      <section>
+        <h2 class="mb-2 font-mono text-[11px] tracking-[0.25em] text-volt uppercase">▚ Outline</h2>
+        <ol id="outline" class="space-y-1 font-mono text-sm"></ol>
+      </section>
+      <section>
+        <h2 class="mb-2 font-mono text-[11px] tracking-[0.25em] text-volt uppercase">▚ Shard</h2>
+        <p id="stats" class="font-mono text-sm text-ice"></p>
+      </section>
+      <section>
+        <h2 class="mb-2 font-mono text-[11px] tracking-[0.25em] text-volt uppercase">▚ Rig</h2>
+        <pre id="screen" class="font-mono text-xs whitespace-pre-wrap text-ice"></pre>
+      </section>
+    </aside>
+  </div>
+
+  <script type="module">
+    import { installFoldablePosture } from '../../client/foldable-posture.js'
+
+    const $ = id => document.getElementById(id)
+    const KEY = 'field-notes'
+    const SEED = [
+      { title: 'Breakpoints in this app', body: '# Breakpoints in this app\n\nPhone: the list, then a note.\nsm (640px): list beside the note (iPad mini, a phone on its side).\nlg (1024px): list, note and an outline.\n\n# On a foldable\n\nHalf open like a book: list left of the crease.\nHalf open like a laptop: the note on top, the list below.\nThe crease comes from --fold-x / --fold-y.' },
+      { title: 'Foldable variants', body: '# Foldable variants\n\nhalf:   [data-hinge="partial"]\nfold-v: half open, crease vertical\nfold-h: half open, crease horizontal\ntouch:  [data-touch], bigger targets\n\n# Use\n\nfold-v:grid-cols-[var(--fold-x)_1fr]\nfold-v:gap-x-[var(--fold-w)]' },
+      { title: 'Release checklist', body: '# Before a release\n\n- iPhone, portrait and landscape\n- iPad mini and iPad Pro\n- MacBook\n- iPhone Duo: closed, half open, open\n\n# After\n\n- Tag and write the changelog' },
+    ]
+
+    const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) } catch { return null } }
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(notes)) } catch { /* private mode */ } }
+    let notes = load() ?? SEED.map((n, i) => ({ id: `${Date.now()}-${i}`, ...n }))
+    let current = notes[0]?.id
+    const note = () => notes.find(n => n.id === current)
+
+    function renderList() {
+      const q = $('search').value.toLowerCase()
+      $('list').replaceChildren(...notes
+        .filter(n => !q || `${n.title} ${n.body}`.toLowerCase().includes(q))
+        .map(n => {
+          const li = document.createElement('li')
+          const b = document.createElement('button')
+          b.type = 'button'
+          b.className = `cut-sm mb-1 w-full border-s-2 px-3 py-2 text-start transition touch:py-3.5 ${n.id === current ? 'border-volt bg-volt text-void shadow-[0_0_18px_rgb(252_238_10/0.35)]' : 'border-transparent hover:border-ice hover:bg-ice/10'}`
+          const t = document.createElement('div'); t.className = 'truncate text-base font-bold tracking-wide uppercase'; t.textContent = n.title || 'Untitled shard'
+          const p = document.createElement('div'); p.className = `truncate font-mono text-xs ${n.id === current ? 'text-void/70' : 'text-zinc-500'}`; p.textContent = n.body.replace(/^#.*$/m, '').trim().split('\n')[0] || 'No text'
+          b.append(t, p)
+          b.addEventListener('click', () => open(n.id))
+          li.append(b)
+          return li
+        }))
+    }
+
+    function renderNote() {
+      const n = note()
+      $('title').value = n?.title ?? ''
+      $('body').value = n?.body ?? ''
+      renderSide()
+    }
+
+    function renderSide() {
+      const body = note()?.body ?? ''
+      $('outline').replaceChildren(...body.split('\n').filter(l => /^#+\s/.test(l)).map(l => {
+        const li = document.createElement('li')
+        li.className = 'truncate text-zinc-300 before:text-blood before:content-["›_"]'
+        li.style.paddingInlineStart = `${(l.match(/^#+/)[0].length - 1) * 12}px`
+        li.textContent = l.replace(/^#+\s/, '')
+        return li
+      }))
+      const words = body.trim() ? body.trim().split(/\s+/).length : 0
+      $('stats').textContent = `${words} WORDS · ${body.length} BYTES`
+    }
+
+    function open(id) { current = id; $('app').dataset.view = 'note'; renderList(); renderNote() }
+
+    $('new').addEventListener('click', () => { const n = { id: `${Date.now()}`, title: '', body: '' }; notes.unshift(n); save(); open(n.id); $('title').focus() })
+    $('delete').addEventListener('click', () => { notes = notes.filter(n => n.id !== current); current = notes[0]?.id; save(); $('app').dataset.view = 'list'; renderList(); renderNote() })
+    $('back').addEventListener('click', () => { $('app').dataset.view = 'list' })
+    $('search').addEventListener('input', renderList)
+    $('title').addEventListener('input', e => { const n = note(); if (!n) return; n.title = e.target.value; save(); renderList() })
+    $('body').addEventListener('input', e => { const n = note(); if (!n) return; n.body = e.target.value; save(); renderList(); renderSide() })
+
+    const showScreen = () => {
+      const d = document.documentElement.dataset
+      $('screen').textContent = `${innerWidth} × ${innerHeight}\nhinge ${d.hinge ?? '—'} · fold ${d.fold ?? '—'}\ninput ${'touch' in d ? 'TOUCH' : 'POINTER'}`
+    }
+    addEventListener('resize', showScreen)
+    installFoldablePosture({ onChange: showScreen })
+
+    renderList(); renderNote(); showScreen()
+  </script>
+</body>
+</html>

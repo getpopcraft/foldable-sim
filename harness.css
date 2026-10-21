@@ -5,8 +5,8 @@
   --border: #2b2b36;
   --fg: #ececf1;
   --muted: #9a9aab;
-  --accent: #34d3c4;
-  --accent-fg: #062724;
+  --accent: #fcee0a;
+  --accent-fg: #07070b;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 * { box-sizing: border-box; }
@@ -22,6 +22,7 @@ body { display: flex; flex-direction: column; background: var(--bg); color: var(
 .gh { color: var(--muted); font-size: 13px; text-decoration: none; }
 
 .stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+.device[data-laptop] { border-radius: 12px 12px 4px 4px !important; }
 .device { position: relative; flex: none; background: #000; box-shadow: 0 30px 80px rgb(0 0 0 / 0.5); transform-origin: center; }
 .device[hidden] { display: none; }
 .device iframe { display: block; border: 0; background: #fff; }
@@ -37,6 +38,8 @@ body { display: flex; flex-direction: column; background: var(--bg); color: var(
 .segmented { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--panel); border: 1px solid var(--border); }
 .segmented button { border: 0; border-radius: 999px; min-height: 40px; padding: 0 18px; background: transparent; color: var(--muted); }
 .segmented button[aria-selected="true"] { background: var(--accent); color: var(--accent-fg); }
+.picker { height: 40px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--fg); font: inherit; font-size: 14px; }
+.segmented[hidden], .controls .icon[hidden] { display: none; }
 .controls .icon { width: 44px; height: 44px; border-radius: 999px; padding: 0; font-size: 18px; }
 .size { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 
